@@ -66,6 +66,3 @@ The current phase establishes the project skeleton, configuration, modular packa
 - Phase 4: knowledge state persistence and auditing
 - Phase 5: evaluation and iteration over research corpus coverage
 
-## Notes
-
-This is intentionally designed as a clean, modular starting point for a take-home assignment and is ready for future expansion without committing to a risky implementation too early.
