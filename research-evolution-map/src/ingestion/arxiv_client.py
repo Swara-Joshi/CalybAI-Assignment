@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import logging
-from datetime import datetime
+import xml.etree.ElementTree as ET
 from typing import Any
 
 import httpx
@@ -31,7 +31,7 @@ class ArxivClient:
         """
         params = {
             "search_query": f"all:{query}",
-            "start": str((page - 1) * page_size + 1),
+            "start": str((page - 1) * page_size),
             "max_results": str(page_size),
         }
 
@@ -51,34 +51,31 @@ class ArxivClient:
 
     def _parse_response(self, payload: str) -> list[dict[str, Any]]:
         """Parse simple XML from arXiv into a list of dictionaries."""
+        namespace = "{http://www.w3.org/2005/Atom}"
+        root = ET.fromstring(payload)
         items: list[dict[str, Any]] = []
-        if "<entry>" not in payload:
-            return items
+        for node in root.findall(f"{namespace}entry"):
+            def text(name: str) -> str:
+                value = node.findtext(f"{namespace}{name}")
+                return value.strip() if value else ""
 
-        chunks = payload.split("<entry>")
-        for chunk in chunks[1:]:
-            entry = {"id": "", "title": "", "authors": [], "summary": "", "published": "", "journal_ref": "", "links": []}
-            if "<id>" in chunk:
-                entry["id"] = chunk.split("<id>", 1)[1].split("</id>", 1)[0].strip()
-            if "<title>" in chunk:
-                entry["title"] = chunk.split("<title>", 1)[1].split("</title>", 1)[0].strip()
-            if "<name>" in chunk:
-                names = []
-                for name in chunk.split("<name>")[1:]:
-                    names.append(name.split("</name>", 1)[0].strip())
-                entry["authors"] = names
-            if "<summary>" in chunk:
-                entry["summary"] = chunk.split("<summary>", 1)[1].split("</summary>", 1)[0].strip()
-            if "<published>" in chunk:
-                entry["published"] = chunk.split("<published>", 1)[1].split("</published>", 1)[0].strip()
-            if "<journal_ref>" in chunk:
-                entry["journal_ref"] = chunk.split("<journal_ref>", 1)[1].split("</journal_ref>", 1)[0].strip()
-            if "<link" in chunk:
-                links = []
-                for link in chunk.split('<link')[1:]:
-                    href = link.split('href="', 1)[1].split('"', 1)[0] if 'href="' in link else ""
-                    if href:
-                        links.append({"href": href})
-                entry["links"] = links
-            items.append(entry)
+            items.append(
+                {
+                    "id": text("id"),
+                    "title": text("title"),
+                    "authors": [
+                        name.text.strip()
+                        for name in node.findall(f"{namespace}author/{namespace}name")
+                        if name.text and name.text.strip()
+                    ],
+                    "summary": text("summary"),
+                    "published": text("published"),
+                    "journal_ref": text("journal_ref"),
+                    "links": [
+                        {"href": link.attrib["href"]}
+                        for link in node.findall(f"{namespace}link")
+                        if link.attrib.get("href")
+                    ],
+                }
+            )
         return items

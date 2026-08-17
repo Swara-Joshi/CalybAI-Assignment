@@ -142,18 +142,18 @@ class PaperIngestor:
         )
 
     def _normalize_missing_fields(self, record: PaperMetadata) -> PaperMetadata:
-        if not record.abstract:
-            record.abstract = "Missing abstract"
-        if not record.venue:
-            record.venue = "Unknown"
-        if not record.url:
-            record.url = "https://example.invalid/" + record.paper_id
-        return record
+        return record.model_copy(
+            update={
+                "abstract": record.abstract or "Missing abstract",
+                "venue": record.venue or "Unknown",
+                "url": record.url or "https://example.invalid/" + record.paper_id,
+            }
+        )
 
     def _has_missing_required_metadata(self, record: PaperMetadata) -> bool:
         return bool(
             not record.title
-            or not record.authors
+            or not any(author.strip() for author in record.authors)
             or not record.abstract
             or record.year is None
             or not record.venue
@@ -175,5 +175,10 @@ class PaperIngestor:
         links = result.get("links") or []
         if not links:
             return None
-        hrefs = [link.get("href") for link in links if isinstance(link, dict) and link.get("href")]
-        return hrefs[0] if hrefs else None
+        hrefs = [
+            link["href"] for link in links
+            if isinstance(link, dict)
+            and isinstance(link.get("href"), str)
+            and link["href"].startswith(("https://arxiv.org/abs/", "http://arxiv.org/abs/", "https://arxiv.org/pdf/", "http://arxiv.org/pdf/"))
+        ]
+        return next((href for href in hrefs if "/abs/" in href), None) or (hrefs[0] if hrefs else None)

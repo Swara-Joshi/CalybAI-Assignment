@@ -91,6 +91,13 @@ class KnowledgeState(BaseModel):
         self.metadata.paper_count = len(self.papers)
 
     def add_relationship(self, relationship: BaseRelationship) -> None:
+        if any(
+            existing.source_id == relationship.source_id
+            and existing.target_id == relationship.target_id
+            and existing.relationship_type == relationship.relationship_type
+            for existing in self.relationships
+        ):
+            return
         self.relationships.append(relationship)
 
     def _lookup_entity(self, entity_id: str) -> object | None:

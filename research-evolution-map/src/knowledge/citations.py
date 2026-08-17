@@ -61,6 +61,8 @@ class CitationGraph:
             return
         self.paper_index[paper.paper_id] = paper
         self.papers.append(paper)
+        self.relationships = []
+        self._build()
 
     def add_relationship(self, source_paper_id: str, target_paper_id: str, evidence: str | None = None) -> CitationRelationship:
         if source_paper_id not in self.paper_index:

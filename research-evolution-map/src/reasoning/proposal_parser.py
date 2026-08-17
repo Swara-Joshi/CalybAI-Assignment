@@ -9,6 +9,8 @@ class ProposalConcepts:
 
     def __init__(self, text: str) -> None:
         self.text = text.strip()
+        if not self.text:
+            raise ValueError("proposal text must not be empty")
         self.tokens = self._tokenize(self.text)
         self.key_phrases = self._extract_key_phrases(self.tokens)
         self.concepts = self._normalize_concepts(self.key_phrases)

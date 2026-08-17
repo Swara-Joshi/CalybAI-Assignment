@@ -4,10 +4,13 @@ import json
 import subprocess
 import sys
 
+import pytest
+
 from src.knowledge.state import KnowledgeState
 from src.models.entities import Benchmark, Limitation, Method, Paper, ResearchDirection, ResearchProblem, Task
 from src.models.relationships import MethodTargetsTask, PaperAddressesProblem, PaperEvaluatesOnBenchmark, PaperIdentifiesLimitation, PaperProposesMethod, ResearchDirectionExploredByPaper, LimitationMotivatesDirection
 from src.reasoning.reasoner import ProposalReasoner
+from src.reasoning.proposal_parser import parse_proposal
 
 
 def _build_state() -> KnowledgeState:
@@ -104,3 +107,17 @@ def test_reason_script_supports_human_output(tmp_path) -> None:
     assert "Closest prior approaches:" in proc.stdout
     assert "Relevant benchmarks:" in proc.stdout
     assert "Potentially underexplored based on the selected dataset" in proc.stdout
+
+
+def test_empty_proposal_is_rejected() -> None:
+    with pytest.raises(ValueError, match="proposal text"):
+        parse_proposal("   ")
+
+
+def test_proposal_matching_does_not_match_a_concept_inside_another_word() -> None:
+    state = KnowledgeState()
+    state.add_entity(Paper(paper_id="p-unrelated", title="Memorable Results", authors=["A"], abstract="A memorable result."))
+
+    result = ProposalReasoner(state).reason("An agent with memory")
+
+    assert result["related_papers"] == []

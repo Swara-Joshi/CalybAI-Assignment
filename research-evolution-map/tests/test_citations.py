@@ -119,3 +119,13 @@ def test_graph_deduplicates_and_validates_internal_membership() -> None:
         assert False, "Expected ValueError"
     except ValueError:
         pass
+
+
+def test_adding_a_paper_builds_new_internal_reference_relationships() -> None:
+    first = PaperMetadata(paper_id="p1", title="First", authors=["A"], source="arxiv", reference_ids=[])
+    graph = CitationGraph([first])
+
+    second = PaperMetadata(paper_id="p2", title="Second", authors=["B"], source="arxiv", reference_ids=["p1"])
+    graph.add_paper(second)
+
+    assert [(rel.source_paper_id, rel.target_paper_id) for rel in graph.relationships] == [("p2", "p1")]

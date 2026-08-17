@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import re
 from typing import Any
 
 from src.knowledge.state import KnowledgeState
@@ -36,7 +37,7 @@ class ProposalReasoner:
                         str(getattr(entity, field, "") or "")
                         for field in ("name", "title", "description", "abstract")
                     ).lower()
-                    if concept.lower() in searchable:
+                    if re.search(rf"(?<!\w){re.escape(concept.lower())}(?!\w)", searchable):
                         matches.append(str(getattr(entity, id_field)))
             if matches:
                 concept_matches[concept] = matches

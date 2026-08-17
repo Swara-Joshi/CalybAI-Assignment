@@ -84,3 +84,10 @@ def test_knowledge_state_json_schema_metadata_is_present(tmp_path) -> None:
     assert payload["metadata"]["dataset_name"] == "research-evolution-map"
     assert payload["metadata"]["paper_count"] == 1
     assert payload["metadata"]["generated_at"]
+
+
+def test_duplicate_relationships_are_not_added_twice() -> None:
+    state = _build_state()
+    state.add_relationship(state.relationships[0])
+
+    assert len(state.relationships) == 2
