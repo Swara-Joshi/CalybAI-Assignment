@@ -58,6 +58,15 @@ def test_proposal_reasoner_matches_related_entities() -> None:
     assert "m-memory" in result["related_methods"]
     assert result["confidence"] >= 0.3
     assert result["evidence"]
+    approach = result["closest_prior_approaches"][0]
+    assert approach["why_relevant"]
+    assert approach["problems_addressed"][0]["evidence"]["source_paper_id"] == "p-llm"
+    assert approach["methods_used"][0]["name"] == "memory-augmented planning"
+    assert approach["limitations_identified"][0]["name"] == "context loss"
+    assert result["relevant_benchmarks"] == ["bench-1"]
+    assert result["research_directions_connected_to_limitations"][0]["evidence"]
+    assert "Potentially underexplored based on the selected dataset" in result["potentially_underexplored_areas"][0]["qualification"]
+    assert "this is novel" not in json.dumps(result).lower()
 
 
 def test_reason_script_runs_from_project_root(tmp_path) -> None:
@@ -77,3 +86,21 @@ def test_reason_script_runs_from_project_root(tmp_path) -> None:
     payload = json.loads(proc.stdout)
     assert "proposal_summary" in payload
     assert "related_methods" in payload
+
+
+def test_reason_script_supports_human_output(tmp_path) -> None:
+    state_path = tmp_path / "knowledge_state.json"
+    state_path.write_text(json.dumps(_build_state().model_dump(mode="json")), encoding="utf-8")
+
+    proc = subprocess.run(
+        [sys.executable, "scripts/reason.py", "--state", str(state_path), "--format", "human", "--input", "persistent memory agents"],
+        cwd="C:/Users/Swara/Desktop/Projects/CalybAI/CalybAI-Assignment/research-evolution-map",
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+
+    assert proc.returncode == 0, proc.stderr
+    assert "Closest prior approaches:" in proc.stdout
+    assert "Relevant benchmarks:" in proc.stdout
+    assert "Potentially underexplored based on the selected dataset" in proc.stdout

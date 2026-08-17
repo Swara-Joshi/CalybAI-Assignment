@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any
+from typing import Annotated, Any
 
 from pydantic import BaseModel, Field
 
@@ -15,7 +15,36 @@ from src.models.entities import (
     ResearchProblem,
     Task,
 )
-from src.models.relationships import BaseRelationship
+from src.models.relationships import (
+    BaseRelationship,
+    LimitationMotivatesDirection,
+    MethodImprovesUponMethod,
+    MethodTargetsTask,
+    PaperAddressesProblem,
+    PaperChallengesPaper,
+    PaperCitesPaper,
+    PaperEvaluatesOnBenchmark,
+    PaperExtendsPaper,
+    PaperIdentifiesLimitation,
+    PaperProposesMethod,
+    ResearchDirectionExploredByPaper,
+)
+
+
+Relationship = Annotated[
+    PaperAddressesProblem
+    | PaperProposesMethod
+    | MethodTargetsTask
+    | PaperEvaluatesOnBenchmark
+    | PaperIdentifiesLimitation
+    | PaperExtendsPaper
+    | PaperChallengesPaper
+    | MethodImprovesUponMethod
+    | LimitationMotivatesDirection
+    | ResearchDirectionExploredByPaper
+    | PaperCitesPaper,
+    Field(discriminator="relationship_type"),
+]
 
 
 class StateMetadata(BaseModel):
@@ -39,7 +68,7 @@ class KnowledgeState(BaseModel):
     benchmarks: list[Benchmark] = Field(default_factory=list)
     limitations: list[Limitation] = Field(default_factory=list)
     research_directions: list[ResearchDirection] = Field(default_factory=list)
-    relationships: list[BaseRelationship] = Field(default_factory=list)
+    relationships: list[Relationship] = Field(default_factory=list)
 
     def add_entity(self, entity: object) -> None:
         if isinstance(entity, Paper):

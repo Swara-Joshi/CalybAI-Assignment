@@ -54,6 +54,8 @@ def test_knowledge_state_serializes_and_deserializes(tmp_path) -> None:
     assert loaded.metadata.paper_count == 1
     assert len(loaded.papers) == 1
     assert len(loaded.relationships) == 2
+    assert loaded.relationships[0].evidence == "Paper frames a core planning problem."
+    assert loaded.relationships[0].confidence == 0.95
 
 
 def test_invalid_relationship_is_rejected_after_load(tmp_path) -> None:

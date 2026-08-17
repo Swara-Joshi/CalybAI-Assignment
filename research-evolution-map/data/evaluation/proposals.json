@@ -1,0 +1,23 @@
+{
+  "dataset_name": "research-evolution-map-evaluation-v1",
+  "dataset_type": "new_proposal_holdout",
+  "construction_data": "The knowledge state is constructed only from data/processed and is loaded separately at evaluation time.",
+  "curation_note": "These proposals are manually written holdouts. Their texts and IDs are not inputs to scripts/build_knowledge_state.py.",
+  "proposals": [
+    {
+      "proposal_id": "eval-memory-001",
+      "text": "I propose an LLM agent with persistent memory that learns from previous tool interactions.",
+      "gold": {"prior_paper_ids": ["p-llm"], "method_ids": ["m-memory"], "problem_ids": ["prob-memory"], "relationship_paths": [["p-llm", "prob-memory"], ["p-llm", "m-memory"]], "evidence": [{"source_id": "p-llm", "target_id": "prob-memory", "relationship_type": "addresses"}, {"source_id": "p-llm", "target_id": "m-memory", "relationship_type": "proposes"}]}
+    },
+    {
+      "proposal_id": "eval-planning-002",
+      "text": "I propose a ReAct agent for planning under uncertainty with longer tool-use trajectories.",
+      "gold": {"prior_paper_ids": ["p-planning"], "method_ids": ["m-react"], "problem_ids": ["prob-planning"], "relationship_paths": [["p-planning", "m-react", "task-planning"]], "evidence": [{"source_id": "p-planning", "target_id": "prob-planning", "relationship_type": "addresses"}, {"source_id": "p-planning", "target_id": "m-react", "relationship_type": "proposes"}, {"source_id": "m-react", "target_id": "task-planning", "relationship_type": "targets"}]}
+    },
+    {
+      "proposal_id": "eval-unseen-003",
+      "text": "I propose grounded multi-agent coordination for scientific literature review.",
+      "gold": {"prior_paper_ids": [], "method_ids": [], "problem_ids": [], "relationship_paths": [], "evidence": []}
+    }
+  ]
+}
